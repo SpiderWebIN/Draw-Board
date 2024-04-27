@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Board</title>
+    <style>
+        #drawing-board {
+            border: 1px solid #000;
+            background-color: black; /* Setting background color to black */
+            cursor: crosshair;
+        }
+
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="drawing-board" width="800" height="600"></canvas>
+    <button id="eraser-btn">Eraser</button>
+    <button id="increase-size-btn">+</button>
+    <button id="decrease-size-btn">-</button>
+    <button class="color-btn" style="background-color: white;" data-color="#ffffff"></button>
+    <button class="color-btn" style="background-color: red;" data-color="#ff0000"></button>
+    <button class="color-btn" style="background-color: green;" data-color="#00ff00"></button>
+    <button class="color-btn" style="background-color: yellow;" data-color="#ffff00"></button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvas = document.getElementById("drawing-board");
+            var ctx = canvas.getContext("2d");
+            var isDrawing = false;
+            var isErasing = false;
+            var cursorSize = 2; // Initial size of the cursor
+            var currentColor = "#000000"; // Initial drawing color
+            var lastX = 0;
+            var lastY = 0;
+
+            function draw(e) {
+                if (!isDrawing) return;
+                if (isErasing) {
+                    ctx.clearRect(e.offsetX - cursorSize / 2, e.offsetY - cursorSize / 2, cursorSize, cursorSize);
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.strokeStyle = currentColor; // Set drawing color
+                    ctx.lineWidth = cursorSize;
+                    ctx.stroke();
+                    [lastX, lastY] = [e.offsetX, e.offsetY];
+                }
+            }
+
+            canvas.addEventListener("mousedown", function(e) {
+                isDrawing = true;
+                if (isErasing) {
+                    ctx.clearRect(e.offsetX - cursorSize / 2, e.offsetY - cursorSize / 2, cursorSize, cursorSize);
+                } else {
+                    [lastX, lastY] = [e.offsetX, e.offsetY];
+                }
+            });
+
+            canvas.addEventListener("mousemove", function(e) {
+                draw(e);
+            });
+
+            canvas.addEventListener("mouseup", function() {
+                isDrawing = false;
+            });
+
+            canvas.addEventListener("mouseout", function() {
+                isDrawing = false;
+            });
+
+            var eraserBtn = document.getElementById("eraser-btn");
+            eraserBtn.addEventListener("click", function() {
+                isErasing = !isErasing;
+                if (isErasing) {
+                    eraserBtn.textContent = "Drawing";
+                    canvas.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"black\"><path d=\"M12 2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z\"/></svg>'), auto";
+                } else {
+                    eraserBtn.textContent = "Eraser";
+                    canvas.style.cursor = "crosshair";
+                }
+            });
+
+            var increaseSizeBtn = document.getElementById("increase-size-btn");
+            increaseSizeBtn.addEventListener("click", function() {
+                cursorSize += 2; // Increase the size by 2 pixels
+            });
+
+            var decreaseSizeBtn = document.getElementById("decrease-size-btn");
+            decreaseSizeBtn.addEventListener("click", function() {
+                if (cursorSize > 2) {
+                    cursorSize -= 2; // Decrease the size by 2 pixels, but keep it minimum 2 pixels
+                }
+            });
+
+            var colorBtns = document.querySelectorAll(".color-btn");
+            colorBtns.forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    currentColor = this.getAttribute("data-color");
+                });
+            });
+        });
+    </script>
+</body>
+</html>
